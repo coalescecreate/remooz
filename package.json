@@ -1,6 +1,6 @@
 {
   "name": "remooz",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Remooz a zoom function for pictures",
   "main": "dist/js/remooz.min.js",
   "style": "dist/css/remooz.min.css",

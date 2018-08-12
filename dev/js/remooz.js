@@ -44,7 +44,8 @@
 					
 					priv.assignImgVariables.apply($this, [$img[0]]);
 
-					$this.set.$zoomImgCont.find('img').hide();
+					if($this.set.$zoomImgCont.find('video').length > 0) $this.set.$zoomImgCont.find('video')[0].pause();
+					$this.set.$zoomImgCont.find('img,video').hide();
 					$img.fadeIn(200,function() {
 						priv.manipulateZoomImg.apply($this);
 					});
@@ -60,7 +61,7 @@
 		initZoomImg: function($zoomImg, imgPos) {
 			var $this = this,
 				zoomImgSrc = '',
-				imgReg = /\.(jpg|jpeg|png|gif)$/i,
+				imgReg = /\.(jpg|jpeg|png|gif|mp4)$/i,
 				imgIndex = null; //The image that the zoom image is based on.
 
 
@@ -81,21 +82,21 @@
 				}
 				if($this.set.zoomTrigger !== false || $this.set.mgBehaviour === 'none') {
 					if($this.set.single !== false) {
-						$this.set.currImg = {'pos': $this.set.singleIndex, 'len': $($this.set.single).find('img').length};
+						$this.set.currImg = {'pos': $this.set.singleIndex, 'len': $($this.set.single).length};
 					}
 				}
 			}
 
 			if($this.set.debug === true && $zoomImg.length === 0) console.warn('No "zoomImg" found check your settings - default img.current');
 
-			zoomImgSrc = $zoomImg.attr('src');
+			zoomImgSrc = $zoomImg.data('remooz-zoom-url') !== undefined ? $zoomImg.data('remooz-zoom-url') : $zoomImg.attr('src');
 			if(imgReg.test(zoomImgSrc)) {
 				$this.set.zoomID = 'js-remooz-' + zoomImgSrc.split('/').pop().replace(imgReg, '');
 			} else {
 				$this.set.zoomID = 'js-remooz-' + zoomImgSrc.split('/').pop();
 			}
 
-			if($('#' + $this.set.zoomID).length === 0 || !priv.isImageLoaded($('#' + $this.set.zoomID)[0])) {
+			if($('#' + $this.set.zoomID).length === 0 || ($('#' + $this.set.zoomID).nodeName === 'IMG' && !priv.isImageLoaded($('#' + $this.set.zoomID)[0]))) {
 				$this.set.$zoomCont.find($this.set.preloader).show();
 
 				//Carry on with loading image and instantiang it's variables.
@@ -108,18 +109,36 @@
 				} else {
 					zoomImgSrc = $zoomImg.attr('src').replace($this.set.srcRegexp, $this.set.srcStrReplace);
 				}
-				$this.set.$zoomImgCont.append('<img id="' + $this.set.zoomID + '" src="' + zoomImgSrc + '" style="z-index: ' + $this.set.zoomZIndex + '; width: 0; height: 0;" />');
+
+				if (/\.mp4$/.test(zoomImgSrc)) {
+					$this.set.$zoomImgCont.append('<video id="' + $this.set.zoomID + '" src="' + zoomImgSrc + '" autoplay playsinline style="z-index: ' + $this.set.zoomZIndex + ';"></video>');
+				} else {
+					$this.set.$zoomImgCont.append('<img id="' + $this.set.zoomID + '" src="' + zoomImgSrc + '" style="z-index: ' + $this.set.zoomZIndex + '; width: 0; height: 0;" />');
+				}
 
 				//Test to see when it is loaded
-				priv.testIfLoaded.apply($this, [zoomImgSrc]);
+				if (/\.mp4$/.test(zoomImgSrc)) {
+					if($this.set.$zoomImgCont.find('video').length > 0) $this.set.$zoomImgCont.find('video')[0].pause();
+					$this.set.$zoomImgCont.find('img,video').hide();
+					$('#' + $this.set.zoomID)[0].play();
+					$('#' + $this.set.zoomID).css('z-index', $this.set.zoomZIndex).fadeIn(200);
+				} else {
+					priv.testIfLoaded.apply($this, [zoomImgSrc]);
+				}
 			} else {
 				//Update the existing image.
-				$this.set.$zoomImgCont.find('img').hide();
+				if($this.set.$zoomImgCont.find('video').length > 0) $this.set.$zoomImgCont.find('video')[0].pause();
+				$this.set.$zoomImgCont.find('img,video').hide();
 				priv.assignImgVariables.apply($this, [$('#' + $this.set.zoomID)[0]]);
-				$('#' + $this.set.zoomID).css('z-index', $this.set.zoomZIndex).fadeIn(200,function() {
+				if($('#' + $this.set.zoomID)[0].nodeName === 'VIDEO') {
+					$('#' + $this.set.zoomID)[0].play();
+					$('#' + $this.set.zoomID).css('z-index', $this.set.zoomZIndex).fadeIn(200);
+				} else {
+					$('#' + $this.set.zoomID).css('z-index', $this.set.zoomZIndex).fadeIn(200,function() {
+						priv.manipulateZoomImg.apply($this);
+					});
 					priv.manipulateZoomImg.apply($this);
-				});
-				priv.manipulateZoomImg.apply($this);
+				}
 			}
 
 		},
@@ -149,7 +168,8 @@
 			$this.set.currImg.pos = $this.set.currImg.pos % $this.set.currImg.len;
 
 			if($this.set.single !== false) {
-				$nextImg = $($this.set.single).eq($this.set.currImg.pos).find('img');
+				$nextImg = $($this.set.single).eq($this.set.currImg.pos);
+				if($nextImg.find('img').length > 0) $nextImg = $($this.set.single).eq($this.set.currImg.pos).find('img');
 			} else {
 				$nextImg = $($this.set.zoomPool).find('img:eq(' + $this.set.currImg.pos + ')');
 				if($nextImg.hasClass($this.set.skipSlide)) {
@@ -315,6 +335,7 @@
 
 			$this.trigger('remooz.zoomClosed');
 			$this.set.isZoomed = false;
+			if($this.set.$zoomImgCont.find('video').length > 0) $this.set.$zoomImgCont.find('video')[0].pause();
 			$('html,body').css('overflow','auto');
 			$(window).scrollTop($this.set.scrollPos);
 			$this.set.$zoomCont.fadeOut(400, function() {
@@ -405,7 +426,7 @@
 					var $zoomImg;
 					//Send the main object and the clicked object
 					if($this.set.zoomImg === 'currentTarget') {
-						$zoomImg = $(e.target);
+						$zoomImg = $(e.currentTarget);
 					} else {
 						$zoomImg = $(this).parent().find($this.set.zoomImg);
 					}
@@ -471,7 +492,7 @@
 						var $zoomImg;
 
 						if($this.set.zoomImg === 'currentTarget') {
-							$zoomImg = $(e.target);
+							$zoomImg = $(e.currentTarget);
 						} else {
 							$zoomImg = $(this).parent().find($this.set.zoomImg);
 						}
@@ -496,7 +517,7 @@
 					var $zoomImg;
 
 					if($this.set.zoomImg === 'currentTarget') {
-						$zoomImg = $(e.target);
+						$zoomImg = $(e.currentTarget);
 					} else {
 						$zoomImg = $(this).parent().find($this.set.zoomImg);
 					}

@@ -204,6 +204,9 @@ Numerous classes can be reassigned. Check the `defaultOpts {}` as to which class
 
 ### Changelog ###
 
+**Version 2.1.0**  
+Added support for video.
+
 **Version 2.0.0**  
 Moved to new repository. [Old repo can be found here.](https://github.com/youngskilled/js-remooz) Made NPM compatible.
 
