@@ -1,4 +1,10 @@
-;(function($, window) {
+;(function(factory) {
+	if(typeof module === 'object' && typeof module.exports === 'object') {
+		factory(require('jquery'), window);
+	} else {
+		factory(jQuery, window);
+	}
+}(function($, window) {
 
 	//PRIVATE Methods
 	var priv = {
@@ -726,4 +732,4 @@
 
 	};
 
-})(jQuery, window);
+}));

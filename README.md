@@ -204,6 +204,9 @@ Numerous classes can be reassigned. Check the `defaultOpts {}` as to which class
 
 ### Changelog ###
 
+**Version 2.0.0**  
+Moved to new repository. [Old repo can be found here.](https://github.com/youngskilled/js-remooz) Made NPM compatible.
+
 **Version 1.9.0**  
 zoomImg now takes a keyword for when the zoom function should just take the image that is currently being targeted. Useful if all images are visible. Also fixed is a bug for top when scroll enabled. Css is now set to `top: 0`.
 
@@ -281,4 +284,4 @@ Initiated events in remooz.init instead of inside a private function
 ### Contact ###
 
 This is a small plugin by Young Skilled.
-Contact [richard](mailto:richard@youngskilled) for more details about this plugin.
+Contact [richard](mailto:richard@coalescecreate.com) for more details about this plugin.
